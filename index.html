@@ -1,0 +1,106 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.common.dev.js"></script>
+<script src="//unpkg.com/element-ui/lib/index.js"></script>
+<style>@import url("//unpkg.com/element-ui/lib/theme-chalk/index.css");
+</style>
+<div id="app">
+  <el-tree
+        :data="data"
+        show-checkbox
+        :props="defaultProps"
+        ref='tree' 
+        node-key="id"
+        default-expand-all
+        @check-change="onCheckChange">
+    </el-tree>
+</div>
+<script>
+var Main = {
+    methods: {
+      init() {
+      	var layer1 = {"id":"5647aa36-895c-4118-8ece-18498b3c3851","name":"layer1","show":true,"type":"a"},
+        layer2 = {"id":"b7d52954-3202-4f68-8a86-521a5ec98a8f","name":"layer2","show":true,"type":"b"},
+        layer3 = {"id":"a333dded-a6a9-4e11-afd8-fd1205779344","name":"layer3","show":true,"type":"c"}
+        this.data[0].children.push(layer1)
+        this.data[0].children.push(layer2)
+        this.data[2].children.push(layer3)
+
+      },
+      onCheckChange (node, checked, subChecked) {
+        console.log('check changed for ' + node.name)
+        if (node.children) {
+          return;
+        }
+        let payLoad = {
+          id: node.id,
+          name: node.name,
+          type: node.type,
+          checked: checked
+        }
+        console.log(JSON.stringify(payLoad))
+      }
+    },
+
+    data() {
+      return {
+      	defaultProps: {
+                    children: 'children',
+                    label: 'name'
+                },
+        data:  [
+        {
+            id: 0,
+            name: 'a',
+            isCollection: true,
+            type: 'a',
+            children: [
+            ]
+        }, {
+            id: 1,
+            name: 'b',
+            isCollection: true,
+            type: 'b',
+            children: []
+        }, {
+            id: 2,
+            name: 'c',
+            isCollection: true,
+            type: 'c',
+            children: [
+            ]
+        }
+      ]
+      };
+    },
+    computed: {
+    	show () {
+      	let show = {};
+                this.data.forEach(collection => {
+                    collection.children.forEach(layer => {
+                        show[layer.name] = {show:layer.show, type: layer.type};
+                    
+                    })
+                });
+                console.log('curr show')
+                console.log(show)
+                return show;
+      }
+    },
+   watch: {
+      show (newVal, oldVal) {
+                console.log('show watch triggered')
+                for (let key in newVal) {
+                    if (!oldVal[key] || newVal[key]['show'] !== oldVal[key]['show']) {
+                    		this.$refs.tree.setChecked(key, newVal[key]['show']);
+                        console.log('set id: '+ key + ' to ' + newVal[key]['show'])
+                        
+                    }
+                }
+            }
+    }, 
+    mounted() {
+    	this.init();
+    }
+  };
+var Ctor = Vue.extend(Main)
+new Ctor().$mount('#app')
+</script>
